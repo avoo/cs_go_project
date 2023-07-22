@@ -10,3 +10,4 @@ requests
 patool
 adjustText
 flask
+PyYAML
