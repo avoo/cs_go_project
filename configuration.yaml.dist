@@ -1,0 +1,6 @@
+api:
+  key: ""
+player:
+  name: ""
+  premade: []
+map: "de_dust2"

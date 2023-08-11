@@ -8,15 +8,16 @@
 from cs_go_analyse.opponent_analysis import *
 import pandas as pd
 from download_matches.Match_recuperation.Demo import *
+from Configuration.Configuration import *
 import pandas as pd
-import warnings
 import sys
 
 if __name__ == "__main__":
     player_name = "NENEs"
     map_select = "de_inferno"
     premade = []
-    demo = Demo()
+    config = Configuration()
+    demo = Demo(config)
 
     demo.download_and_parse(
         starting_item_position_call=0,

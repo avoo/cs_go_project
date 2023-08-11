@@ -9,6 +9,7 @@ import numpy as np
 import os
 import imageio
 from IPython.display import display
+import sys
 
 def pistol_analysis(player_name, map_select, list_match, side="t", start_frame=7):
     gif_frames = []

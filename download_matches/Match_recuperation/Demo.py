@@ -1,5 +1,6 @@
 import os
 from awpy.parser import DemoParser
+from Configuration.Configuration import *
 from .faceit_api.faceit_data import FaceitData
 import requests
 import re
@@ -9,22 +10,11 @@ from yaml.loader import SafeLoader
 import yaml
 import json
 import sys
+from typing import Type
 
 class Demo:
-    def __init__(self):
-        with open("configuration.yaml", "r") as ymlfile:
-            self.cfg = yaml.load(ymlfile, Loader=SafeLoader)
-
-        print("configuration loaded")
-        self.player_id = self.__get_player_id()
-        self.demo_path = "demo_csgo/"
-
-    def __get_player_id(self):
-        faceit_data = FaceitData(self.cfg['api']['key'])
-        player = faceit_data.player_details(nickname=self.cfg['player']['name'])
-        print(self.cfg["player"]["name"] + " player id: '" + player["player_id"])
-
-        return player["player_id"]
+    def __init__(self, configuration: Type[Configuration]):
+        self.__config = configuration
 
     def download_and_parse(
         self,
@@ -35,11 +25,11 @@ class Demo:
         replace=False,
         nb_match_analyses_max=4,
     ):
-        faceit_data = FaceitData(self.cfg['api']['key'])
+        faceit_data = FaceitData(self.__config.get('api', 'key'))
 
         print("get matches from faceit")
         all_match_player = faceit_data.player_matches(
-            player_id=self.player_id,
+            player_id=self.__config.player_id,
             game="csgo",
             starting_item_position=starting_item_position_call,
             return_items=return_items_call,
@@ -49,11 +39,11 @@ class Demo:
         succeed = 0
         cpt = 0
         if replace:
-            print("removing old demos in", self.demo_path + map_select, "###")
-            filelist = [f for f in os.listdir(self.demo_path + map_select) if not f.startswith('.')]
+            print("removing old demos in", self.__config.demo_path + map_select, "###")
+            filelist = [f for f in os.listdir(self.__config.demo_path + map_select) if f.startswith(self.__config.get('player', 'name'))]
             
             for f in filelist:
-                os.remove(os.path.join(self.demo_path + map_select, f))
+                os.remove(os.path.join(self.__config.demo_path + map_select, f))
         
         for i in range(len(all_match_player["items"])):
             cpt += 1
@@ -87,7 +77,7 @@ class Demo:
                 continue
 
             verif = 0
-            faceit_data = FaceitData(self.cfg['api']['key'])
+            faceit_data = FaceitData(self.__config.get('api', 'key'))
             print(all_match_player["items"][i]["match_id"])
             match_details = faceit_data.match_details(
                 all_match_player["items"][i]["match_id"]
@@ -95,13 +85,13 @@ class Demo:
             match_name = all_match_player["items"][i]["match_id"]
 
             for root, dirs, files in os.walk(
-                self.demo_path + match_details["voting"]["map"]["pick"][0]
+                self.__config.demo_path + match_details["voting"]["map"]["pick"][0]
             ):
                 for filename in files:
                     print(
                         filename,
                         " compare to : ",
-                        self.cfg["player"]["name"]
+                        self.__config.get('player', 'name')
                         + "_"
                         + match_details["voting"]["map"]["pick"][0]
                         + "_"
@@ -112,7 +102,7 @@ class Demo:
                     )
                     if (
                         filename
-                        == self.cfg["player"]["name"]
+                        == self.__config.get('player', 'name')
                         + "_"
                         + match_details["voting"]["map"]["pick"][0]
                         + "_"
@@ -132,13 +122,13 @@ class Demo:
             url = match_details["demo_url"][0]
             headers = {
                 "accept": "application/json",
-                "Authorization": "Bearer {}".format(self.cfg['api']['key']),
+                "Authorization": "Bearer {}".format(self.__config.get('api', 'key')),
             }
 
             proc.append(
                 multiprocessing.Process(
-                    target=Demo().parse_demos,
-                    args=(url, match_details, all_match_player, self.cfg["player"]["name"], i),
+                    target=Demo(self.__config).parse_demos,
+                    args=(url, match_details, all_match_player, self.__config.get('player', 'name'), i),
                 )
             )
             proc[succeed].start()
@@ -162,17 +152,17 @@ class Demo:
 
     def read_all_csgo_match_of_one_map_json(self):
         list_match = []
-        print('Reading demos for', self.cfg['map'])
-        for root, dirs, files in os.walk(self.demo_path + self.cfg['map']):
+        print('Reading demos for', self.__config.get('map'))
+        for root, dirs, files in os.walk(self.__config.demo_path + self.__config.get('map')):
             for filename in files:
-                if filename.startswith('.'):
+                if not filename.startswith(self.__config.get('player', 'name')):
                     continue
 
-                pattern = '(' + self.cfg['player']['name'] + '_' + self.cfg['map'] + '.*?).json'
+                pattern = '(' + self.__config.get('player', 'name') + '_' + self.__config.get('map') + '.*?).json'
                 filename = re.search(pattern, filename).group(1)
                 print(filename)
                 with open(
-                    self.demo_path + self.cfg['map'] + "/" + filename + ".json"
+                    self.__config.demo_path + self.__config.get('map') + "/" + filename + ".json"
                 ) as file:
                     data = json.load(file)
                     list_match.append(data)
@@ -192,7 +182,7 @@ class Demo:
         r = requests.get(url)
         #  print(r.status_code)
         with open(
-            self.demo_path
+            self.__config.demo_path
             + match_details["voting"]["map"]["pick"][0]
             + "_"
             + str(match_details["configured_at"])
@@ -201,7 +191,7 @@ class Demo:
         ) as f:
             f.write(r.content)
         print(
-            self.demo_path
+            self.__config.demo_path
             + match_details["voting"]["map"]["pick"][0]
             + "_"
             + str(match_details["configured_at"])
@@ -209,12 +199,12 @@ class Demo:
         )
 
         patoolib.extract_archive(
-            self.demo_path
+            self.__config.demo_path
             + match_details["voting"]["map"]["pick"][0]
             + "_"
             + str(match_details["configured_at"])
             + ".dem.7z",
-            outdir=self.demo_path,
+            outdir=self.__config.demo_path,
         )
         print("extract to:")
         s = match_details["demo_url"][0]
@@ -223,7 +213,7 @@ class Demo:
 
         print(
             "debut du parse",
-            self.demo_path
+            self.__config.demo_path
             + match_details["voting"]["map"]["pick"][0]
             + "_"
             + str(match_details["configured_at"])
@@ -231,7 +221,7 @@ class Demo:
         )
         try:
             demo_parser = DemoParser(
-                demofile=self.demo_path
+                demofile=self.__config.demo_path
                 + match_details["voting"]["map"]["pick"][0]
                 + "_"
                 + str(match_details["configured_at"])
@@ -244,20 +234,20 @@ class Demo:
                 + "_"
                 + match_name,
                 parse_rate=128,
-                outpath=self.demo_path
+                outpath=self.__config.demo_path
                 + match_details["voting"]["map"]["pick"][0]
                 + "/",
             )
             data = demo_parser.parse()
             os.remove(
-                self.demo_path
+                self.__config.demo_path
                 + match_details["voting"]["map"]["pick"][0]
                 + "_"
                 + str(match_details["configured_at"])
                 + ".dem"
             )
             os.remove(
-                self.demo_path
+                self.__config.demo_path
                 + match_details["voting"]["map"]["pick"][0]
                 + "_"
                 + str(match_details["configured_at"])
@@ -265,7 +255,7 @@ class Demo:
             )
         except:
             demo_parser = DemoParser(
-                demofile=self.demo_path + match_name + ".dem",
+                demofile=self.__config.demo_path + match_name + ".dem",
                 demo_id=nickname
                 + "_"
                 + match_details["voting"]["map"]["pick"][0]
@@ -274,14 +264,14 @@ class Demo:
                 + "_"
                 + match_name,
                 parse_rate=128,
-                outpath=self.demo_path
+                outpath=self.__config.demo_path
                 + match_details["voting"]["map"]["pick"][0]
                 + "/",
             )
             data = demo_parser.parse()
-            os.remove(self.demo_path + match_name + ".dem")
+            os.remove(self.__config.demo_path + match_name + ".dem")
             os.remove(
-                self.demo_path
+                self.__config.demo_path
                 + match_details["voting"]["map"]["pick"][0]
                 + "_"
                 + str(match_details["configured_at"])
