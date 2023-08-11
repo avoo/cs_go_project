@@ -10,30 +10,12 @@ import os
 import imageio
 from IPython.display import display
 
-
-def read_all_csgo_match_of_one_map_json(map_wanted):
-    list_match = []
-    print("map_wanted :", map_wanted)
-    for root, dirs, files in os.walk("demo_csgo/DataBase/" + map_wanted):
-        for filename in files:
-            pattern = "(.*?).json"
-            filename = re.search(pattern, filename).group(1)
-            print(filename)
-            with open(
-                "demo_csgo/DataBase/" + map_wanted + "/" + filename + ".json"
-            ) as file:
-                data = json.load(file)
-                list_match.append(data)
-    return list_match
-
-
 def pistol_analysis(player_name, map_select, list_match, side="t", start_frame=7):
     gif_frames = []
     for frame in range(start_frame, start_frame + 1, 1):
         dataframe_position_final = pd.DataFrame(columns=["x", "y"])
         dataframe_grenade = pd.DataFrame(columns=["x", "y", "info"])
         bombsite = []
-        # list_match = read_all_csgo_match_of_one_map_json(map_select)
         kit = 0
         prob_place = pd.DataFrame()
         cpt = 0
@@ -188,8 +170,6 @@ def grenade_analysis(dic_list, map_select, x, y, text=False, info=None):
 
 
 def fav_bomb_site_analysis(player_name, list_match, map_select, side="t", frame=-1):
-    # list_match = read_all_csgo_match_of_one_map_json(map_select)
-
     bombsiteA, bombsiteB = coordonee_bomb_site(list_match[0])
 
     round_time_before_plant_Full_Eco = []
@@ -458,7 +438,6 @@ def round_analysis(
     dataframe_position_final = pd.DataFrame(columns=["x", "y", "z"])
     dataframe_grenade = pd.DataFrame(columns=["x", "y", "info"])
     bombsite = []
-    # list_match = read_all_csgo_match_of_one_map_json(map_select)
     kit = 0
     prob_place = pd.DataFrame()
     cpt = 0
@@ -832,7 +811,6 @@ def second_round(
     dataframe_position_final = pd.DataFrame(columns=["x", "y", "z"])
     dataframe_grenade = pd.DataFrame(columns=["x", "y", "info"])
     bombsite = []
-    # list_match = read_all_csgo_match_of_one_map_json(map_select)
     kit = 0
     prob_place = pd.DataFrame()
     cpt = 0

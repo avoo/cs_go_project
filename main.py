@@ -7,50 +7,36 @@
 
 from cs_go_analyse.opponent_analysis import *
 import pandas as pd
-from download_matches.Match_recuperation.Data_Parse import *
-from cs_go_analyse.opponent_analysis import *
-from yaml.loader import SafeLoader
+from download_matches.Match_recuperation.Demo import *
 import pandas as pd
 import warnings
-import yaml
 import sys
 
 if __name__ == "__main__":
-    warnings.filterwarnings("ignore")
     player_name = "NENEs"
     map_select = "de_inferno"
     premade = []
+    demo = Demo()
 
-    with open("configuration.yaml", "r") as ymlfile:
-        cfg = yaml.load(ymlfile, Loader=SafeLoader)
-
-    print(cfg["api"]["key"])
-    sys.exit()
-
-    match_recuperation_dict_txt(
-        api_key="38b28095-4ca6-48b6-aec5-748f507d5fcf",
-        player_id="57c4c556-3b8e-4695-bf55-122dde5040db",
+    demo.download_and_parse(
         starting_item_position_call=0,
         return_items_call=70,
         map_select=map_select,
-        nickname=player_name,
         premade=premade,
         replace=True,
         nb_match_analyses_max=10,
     )
 
-    list_match = read_all_csgo_match_of_one_map_json(map_select)
-
     # # II/ Match Analysis
     #
     # ## A/ Gameplay general style analysis
 
-    warnings.filterwarnings("ignore")
-    list_match = read_all_csgo_match_of_one_map_json(map_select)
-    print(map_select)
+    list_match = demo.read_all_csgo_match_of_one_map_json()
+    
     data, df = fav_bomb_site_analysis(player_name, list_match, map_select)
     data
 
+    print(map_select)
     # # B/ Gunround and following round analysis
     # ## B.1/ T side pistol
 
