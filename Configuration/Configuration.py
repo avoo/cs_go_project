@@ -6,14 +6,13 @@ import sys
 class Configuration:
     def __init__(self):
         with open("./configuration.yaml", "r") as ymlfile:
-            self.cfg = yaml.load(ymlfile, Loader=SafeLoader)
+            self.__cfg = yaml.load(ymlfile, Loader=SafeLoader)
 
-        print("configuration loaded")
         self.player_id = self.__get_player_id()
         self.demo_path = "demo_csgo/"
 
     def get(self, *keys):
-        values = self.cfg
+        values = self.__cfg
         for key in keys:
             values = values.get(key)
             if values is None:
@@ -23,8 +22,8 @@ class Configuration:
         return values
     
     def __get_player_id(self):
-        faceit_data = FaceitData(self.cfg['api']['key'])
-        player = faceit_data.player_details(nickname=self.cfg['player']['name'])
-        print(self.cfg["player"]["name"] + " player id: " + player["player_id"])
+        faceit_data = FaceitData(self.__cfg['api']['key'])
+        player = faceit_data.player_details(nickname=self.__cfg['player']['name'])
+        print(self.__cfg["player"]["name"] + " player id: " + player["player_id"])
 
         return player["player_id"]

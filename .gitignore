@@ -1,4 +1,6 @@
 __pycache__
 configuration.yaml
 demo_csgo/*
+output/img/*
+output/json/*
 !.gitkeep

@@ -88,6 +88,9 @@ class Demo:
                 self.__config.demo_path + match_details["voting"]["map"]["pick"][0]
             ):
                 for filename in files:
+                    if not filename.startswith(self.__config.get('player', 'name')):
+                        continue
+
                     print(
                         filename,
                         " compare to : ",
@@ -160,7 +163,7 @@ class Demo:
 
                 pattern = '(' + self.__config.get('player', 'name') + '_' + self.__config.get('map') + '.*?).json'
                 filename = re.search(pattern, filename).group(1)
-                print(filename)
+
                 with open(
                     self.__config.demo_path + self.__config.get('map') + "/" + filename + ".json"
                 ) as file:

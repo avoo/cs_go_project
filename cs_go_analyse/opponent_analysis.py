@@ -144,14 +144,16 @@ def pistol_analysis(player_name, map_select, list_match, side="t", start_frame=7
             dataframe_position_final,
             map_select,
             frame=frame,
+            title="Pistol analysis",
             text=True,
             nb_games=len(list_match),
             color_set="Match_ID",
         )
         image = imageio.v2.imread(f"./demo_csgo/img/img_{frame}.png")
         gif_frames.append(image)
+    
     imageio.mimsave(
-        f"demo_csgo/img/{side}.gif",  # output gif
+        f"output/img/{side}.gif",  # output gif
         gif_frames,  # array of input frames
         duration=1000,
     )  # optional: frames per second
@@ -171,6 +173,7 @@ def grenade_analysis(dic_list, map_select, x, y, text=False, info=None):
 
 
 def fav_bomb_site_analysis(player_name, list_match, map_select, side="t", frame=-1):
+    print('Favorite bomb site analysis')
     bombsiteA, bombsiteB = coordonee_bomb_site(list_match[0])
 
     round_time_before_plant_Full_Eco = []
@@ -351,6 +354,11 @@ def fav_bomb_site_analysis(player_name, list_match, map_select, side="t", frame=
     round_time_before_plant_pistol = np.array(round_time_before_plant_pistol)
     round_time_before_plant_ct_eco = np.array(round_time_before_plant_ct_eco)
 
+    pd.set_option('display.max_column', None)
+    pd.set_option('display.max_rows', None)
+    pd.set_option('display.max_seq_items', None)
+    pd.set_option('display.max_colwidth', 800)
+    pd.set_option('expand_frame_repr', True)
     data = pd.DataFrame(
         index=[
             "Full_eco_T",
@@ -423,7 +431,9 @@ def fav_bomb_site_analysis(player_name, list_match, map_select, side="t", frame=
     )
 
     # data_bomb = plot_map_list_of_game(dataframe_position_final, map_select,frame = frame,text = True, nb_games = len(list_match),premade = premade)
-    plot_from_df(bomb_dataframe, map_select)
+    plot_from_df(bomb_dataframe, map_select, title='Favorite bomb site')
+    data.to_json('output/json/probabilities.json')
+
     return data, bomb_dataframe
 
 
@@ -953,6 +963,7 @@ def second_round(
         map_select,
         frame=frame,
         text=True,
+        title='Second round',
         nb_games=len(list_match),
         premade=premade,
     )
@@ -992,7 +1003,7 @@ def ct_kill_position(player_name, map_select, list_match, premade):
             ):
                 for killer in list_match[num_match]["gameRounds"][round_t]["kills"]:
                     if (killer["attackerSide"] == "CT") & (
-                        killer["attackerName"] in (joueur)
+                        killer["attackerName"] in (premade)
                     ):
                         player_dict = {
                             "player": killer["attackerName"],
@@ -1017,4 +1028,4 @@ def ct_kill_position(player_name, map_select, list_match, premade):
             lambda x: pointy_to_resolutiony(x, map_select)
         )
 
-        plot_from_simple_df(dataframe_position_final, map_select)
+        #plot_from_simple_df(dataframe_position_final, map_select)

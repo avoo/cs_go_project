@@ -4,12 +4,14 @@ from adjustText import adjust_text
 from io import BytesIO
 import base64
 from matplotlib.patches import Rectangle
+from random import randint
 
 
 def plot_map_list_of_game(
     dataframe_position,
     carte,
     frame,
+    title="Plot position",
     text=False,
     nb_games=4,
     premade=[],
@@ -55,7 +57,7 @@ def plot_map_list_of_game(
             "fuchsia",
             "coral",
         ]
-        ax.set_title("Plot position")
+        ax.set_title(title)
         for i in range(0, loop_len, 1):
             ax.scatter(
                 [
@@ -77,7 +79,6 @@ def plot_map_list_of_game(
                 color=color[i],
                 alpha=1,
                 zorder=3,
-                cmap="hot",
                 marker="+",
             )
             ax.scatter(
@@ -100,7 +101,6 @@ def plot_map_list_of_game(
                 color=color[i],
                 alpha=1,
                 zorder=3,
-                cmap="hot",
             )
         hb = ax.hexbin(
             x=[dataframe_position["x"]],
@@ -128,29 +128,29 @@ def plot_map_list_of_game(
         cb = fig.colorbar(hb, ax=ax, cax=cax)
         buf = BytesIO()
         fig.savefig(buf, format="png")
+        plt.axis('off')
         plt.savefig(
-            fname=f"./demo_csgo/img/img_{frame}.png",
+            fname=f"output/img/img_{frame}.png",
             transparent=False,
             facecolor="white",
         )
 
-        plt.show()
         return base64.b64encode(buf.getbuffer()).decode("ascii")
     else:
         print(dataframe_position, "nothing in df")
         return 1
 
 
-def plot_from_df(dataframe_position, carte):
+def plot_from_df(dataframe_position, map, title='Plot position'):
     plt.figure()
     fig, ax = plt.subplots(figsize=(15, 15))
-    ax.set_title("Plot position")
+    ax.set_title(title)
+    ax.axis('off')
     ax.scatter(
         [dataframe_position["x"][dataframe_position["side_A"] == True]],
         [dataframe_position["y"][dataframe_position["side_A"] == True]],
         alpha=1,
         zorder=3,
-        cmap="hot",
         marker="+",
     )
     ax.scatter(
@@ -158,10 +158,9 @@ def plot_from_df(dataframe_position, carte):
         [dataframe_position["y"][dataframe_position["side_A"] == False]],
         alpha=1,
         zorder=3,
-        cmap="hot",
     )
 
-    map_bg = plt.imread("demo_csgo/map_adjustement/" + carte + ".png")
+    map_bg = plt.imread("demo_csgo/map_adjustement/" + map + ".png")
     # plt.plot([690, 690], [760, 900], 'k-', lw=2)
     # plt.plot([530, 530], [400, 560], 'k-', lw=2,color = "red")
     # plt.plot([0, 530], [400, 400], 'k-', lw=2,color = "red")
@@ -172,13 +171,16 @@ def plot_from_df(dataframe_position, carte):
 
     ax.imshow(map_bg, zorder=0)
 
-    plt.show()
+    plt.savefig(
+        fname=f"output/img/fav_bomb_site.png",
+        transparent=False,
+        facecolor="white",
+    )
 
-
-def plot_from_simple_df(dataframe_position, carte):
+def plot_from_simple_df(dataframe_position, map, title='Plot position'):
     plt.figure()
     fig, ax = plt.subplots(figsize=(15, 15))
-    ax.set_title("Plot position")
+    ax.set_title(title)
     ax.scatter(
         [dataframe_position["x"]],
         [dataframe_position["y"]],
@@ -187,7 +189,7 @@ def plot_from_simple_df(dataframe_position, carte):
         cmap="hot",
     )
 
-    map_bg = plt.imread("demo_csgo/map_adjustement/" + carte + ".png")
+    map_bg = plt.imread("demo_csgo/map_adjustement/" + map + ".png")
     hb = ax.hexbin(
         x=[dataframe_position["x"]],
         y=[dataframe_position["y"]],

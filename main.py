@@ -13,11 +13,13 @@ import pandas as pd
 import sys
 
 if __name__ == "__main__":
-    player_name = "NENEs"
-    map_select = "de_inferno"
-    premade = []
     config = Configuration()
     demo = Demo(config)
+
+    # TODO replace variables by the configuration
+    player_name = config.get('player', 'name')
+    map_select = config.get('map')
+    premade = config.get('player', 'premade')
 
     demo.download_and_parse(
         starting_item_position_call=0,
@@ -33,11 +35,11 @@ if __name__ == "__main__":
     # ## A/ Gameplay general style analysis
 
     list_match = demo.read_all_csgo_match_of_one_map_json()
-    
-    data, df = fav_bomb_site_analysis(player_name, list_match, map_select)
-    data
 
-    print(map_select)
+    data, df = fav_bomb_site_analysis(player_name, list_match, map_select)
+
+    print("", data, "")
+
     # # B/ Gunround and following round analysis
     # ## B.1/ T side pistol
 
